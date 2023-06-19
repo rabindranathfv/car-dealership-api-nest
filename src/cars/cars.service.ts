@@ -1,26 +1,65 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+
+import { v4 as uuid } from 'uuid';
+
 import { CreateCarDto } from './dto/create-car.dto';
 import { UpdateCarDto } from './dto/update-car.dto';
+import { Car } from './interfaces/cars.interface';
 
 @Injectable()
 export class CarsService {
-  create(createCarDto: CreateCarDto) {
-    return 'This action adds a new car';
-  }
+  private cars: Car[] = [];
 
   findAll() {
-    return `This action returns all cars`;
+    return this.cars;
   }
 
   findOne(id: string) {
-    return `This action returns a #${id} car`;
+    const car = this.cars.find((car) => car.id === id);
+    if (!car) throw new NotFoundException(`Car with id '${id}' not found`);
+
+    return car;
+  }
+
+  create(createCarDto: CreateCarDto) {
+    const car: Car = {
+      id: uuid(),
+      ...createCarDto,
+    };
+
+    this.cars.push(car);
+
+    return car;
   }
 
   update(id: string, updateCarDto: UpdateCarDto) {
-    return `This action updates a #${id} car`;
+    let carDB = this.findOne(id);
+
+    if (updateCarDto.id && updateCarDto.id !== id)
+      throw new BadRequestException(`Car id is not valid inside body`);
+
+    this.cars = this.cars.map((car) => {
+      if (car.id === id) {
+        carDB = { ...carDB, ...updateCarDto, id };
+        return carDB;
+      }
+
+      return car;
+    });
+
+    return carDB;
   }
 
   remove(id: string) {
-    return `This action removes a #${id} car`;
+    const car = this.findOne(id);
+    this.cars = this.cars.filter((car) => car.id !== id);
+  }
+
+  carsWithSeedData(cars: Car[]) {
+    this.cars = cars;
   }
 }
