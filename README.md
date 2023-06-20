@@ -41,6 +41,11 @@ $ npm run start
 # watch mode
 $ npm run start:dev
 
+# use seeder endpoint
+http://localhost:3000/seed
+
+#consume any endpoint for cars and brands
+
 # production mode
 $ npm run start:prod
 ```
